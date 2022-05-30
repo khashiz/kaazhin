@@ -1,0 +1,1 @@
+particlesJS.load('hParticles', 'templates/rasa/js/particles-h.json');
