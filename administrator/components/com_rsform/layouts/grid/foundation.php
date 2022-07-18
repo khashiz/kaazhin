@@ -28,7 +28,14 @@ class RSFormProGridFoundation extends RSFormProGrid
 		foreach ($this->pages as $page_index => $rows)
 		{
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
-			$html[] = '<fieldset class="formContainer" id="rsform_{global:formid}_page_' . $page_index . '">';
+
+			$classes = array('formContainer');
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
+
+			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)
 			{
 				// Start a new row

@@ -45,12 +45,19 @@ class TableRSForm_Conditions extends JTable
 
 			$this->component_id = RSFormProConditions::parseComponentIds($this->component_id);
 
-			$query = $this->_db->getQuery(true);
-			$query->select('*')
-				->from($this->_db->qn('#__rsform_condition_details'))
-				->where($this->_db->qn('condition_id') . ' = ' . $this->_db->q($this->id));
-			$this->_db->setQuery($query);
-			$this->details = $this->_db->loadObjectList();
+			if ($this->id)
+			{
+				$query = $this->_db->getQuery(true);
+				$query->select('*')
+					->from($this->_db->qn('#__rsform_condition_details'))
+					->where($this->_db->qn('condition_id') . ' = ' . $this->_db->q($this->id));
+				$this->_db->setQuery($query);
+				$this->details = $this->_db->loadObjectList();
+			}
+			else
+			{
+				$this->details = array();
+			}
 		}
 
 		return $result;

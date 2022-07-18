@@ -1042,7 +1042,11 @@ class RsformModelSubmissions extends JModelList
         $enclosure      = empty($options['enclosure']) ? '"' : $options['enclosure'];
         $lines          = array();
 
-        ini_set('auto_detect_line_endings', true);
+        if (version_compare(PHP_VERSION, '8.1', '<'))
+        {
+	        ini_set('auto_detect_line_endings', true);
+        }
+
         setlocale(LC_ALL, 'en_US.UTF-8');
 
         $h = fopen($file, 'r');

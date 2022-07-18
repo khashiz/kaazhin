@@ -149,6 +149,20 @@ class RsformRouter extends JComponentRouterBase
 				}
 				break;
 
+			case 'deletesubmission':
+				switch ($layout)
+				{
+					case 'complete':
+						$segments[] = JText::_('COM_RSFORM_SEF_DELETE_SUBMISSION_COMPLETE');
+						break;
+
+					default:
+						$segments[] = JText::_('COM_RSFORM_SEF_DELETE_SUBMISSION_REQUEST');
+						break;
+				}
+				unset($query['view'], $query['layout']);
+				break;
+
 			case 'rsform':
 				if (!empty($query['formId']))
 				{
@@ -297,6 +311,16 @@ class RsformRouter extends JComponentRouterBase
 					$query['file'] = $segments[2];
 				}
 
+				break;
+
+			case JText::_('COM_RSFORM_SEF_DELETE_SUBMISSION_COMPLETE'):
+				$query['view'] = 'deletesubmission';
+				$query['layout'] = 'complete';
+				break;
+
+			case JText::_('COM_RSFORM_SEF_DELETE_SUBMISSION_REQUEST'):
+				$query['view'] = 'deletesubmission';
+				$query['layout'] = 'default';
 				break;
 		}
 

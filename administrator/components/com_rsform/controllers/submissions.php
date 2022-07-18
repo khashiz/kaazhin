@@ -313,7 +313,10 @@ class RsformControllerSubmissions extends RsformController
         $limit  = $app->input->getInt('importLimit', 500);
         $formId = $app->input->getInt('formId');
 
-        ini_set('auto_detect_line_endings', true);
+	    if (version_compare(PHP_VERSION, '8.1', '<'))
+	    {
+		    ini_set('auto_detect_line_endings', true);
+	    }
         setlocale(LC_ALL, 'en_US.UTF-8');
 
         if (!file_exists($file) || !is_readable($file))

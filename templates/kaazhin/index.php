@@ -70,7 +70,7 @@ $this->setMetaData('viewport', 'width=device-width, initial-scale=1');
 	<jdoc:include type="scripts" />
 </head>
 <body>
-    <header class="uk-width-1-1" data-uk-sticky>
+    <header class="uk-width-1-1" id="header">
         <div class="uk-grid-collapse" data-uk-grid>
             <div class="uk-width-auto">
                 <a href="" class="uk-flex uk-padding-small logo" title="">
@@ -87,31 +87,41 @@ $this->setMetaData('viewport', 'width=device-width, initial-scale=1');
             </div>
         </div>
     </header>
-    <ul class="uk-position-z-index uk-position-center-right uk-margin-remove uk-padding-remove socials uk-visible@s">
-	    <?php foreach ($params->get('socials') as $item) : ?>
-		    <?php if ($item->icon != '') { ?>
-                <li>
-                    <a href="<?php echo $item->link; ?>" title="<?php echo $item->title; ?>" data-uk-tooltip="pos: left; cls: uk-active uk-text-small" class="uk-flex uk-flex-center uk-flex-middle" target="_blank" id="<?php echo $item->title; ?>">
-	                    <?php if ($item->icon == 'aparat') { ?>
-                            <img src="<?php echo JUri::base().'images/sprite.svg#'.$item->icon; ?>" width="32" height="32" alt="<?php echo $item->title; ?>" data-uk-svg>
-	                    <?php } else { ?>
-                            <i class="fab fa-fw fa-2x fa-<?php echo $item->icon; ?>"></i>
-	                    <?php } ?>
-                    </a>
-                </li>
-		    <?php } ?>
-	    <?php endforeach; ?>
-    </ul>
-
+    <?php if ($pageclass == 'home') { ?>
+        <ul class="uk-position-z-index uk-position-center-right uk-margin-remove uk-padding-remove socials uk-visible@s">
+            <?php foreach ($params->get('socials') as $item) : ?>
+                <?php if ($item->icon != '') { ?>
+                    <li>
+                        <a href="<?php echo $item->link; ?>" title="<?php echo $item->title; ?>" data-uk-tooltip="pos: left; cls: uk-active uk-text-small" class="uk-flex uk-flex-center uk-flex-middle" target="_blank" id="<?php echo $item->title; ?>">
+                            <?php if ($item->icon == 'aparat') { ?>
+                                <img src="<?php echo JUri::base().'images/sprite.svg#'.$item->icon; ?>" width="32" height="32" alt="<?php echo $item->title; ?>" data-uk-svg>
+                            <?php } else { ?>
+                                <i class="fab fa-fw fa-2x fa-<?php echo $item->icon; ?>"></i>
+                            <?php } ?>
+                        </a>
+                    </li>
+                <?php } ?>
+            <?php endforeach; ?>
+        </ul>
+    <?php } elseif ($pageparams->get('show_page_heading', 1)) { ?>
+        <section class="uk-background-muted uk-background-cover uk-background-center-center uk-position-relative pageHead <?php echo $pageclass; ?>">
+            <div class="uk-position-relative">
+                <div class="uk-container">
+                    <h1 class="font uk-text-center uk-h1 uk-text-white uk-text-heavy"><?php echo $pageparams->get('page_heading'); ?></h1>
+                    <jdoc:include type="modules" name="breadcrumbs" style="none" />
+                </div>
+            </div>
+        </section>
+    <?php } ?>
     <?php if ($this->countModules('topout', true)) : ?>
         <jdoc:include type="modules" name="topout" style="html5" />
     <?php endif; ?>
-    <main class="<?php if ($pageparams->get('mainpadding')) { echo 'uk-padding-large uk-padding-remove-horizontal';} ?>" data-uk-height-viewport="expand: true">
+    <main class="<?php if ($pageparams->get('mainpadding', 0) && $pageclass != 'home') { echo 'uk-padding-large uk-padding-remove-horizontal';} ?>" data-uk-height-viewport="expand: true">
         <?php if ($this->countModules('topin', true)) : ?>
             <jdoc:include type="modules" name="topin" style="html5" />
         <?php endif; ?>
         <div class="<?php echo $pageparams->get('gridsize', '') ?>">
-            <div class="uk-grid-divider" data-uk-grid>
+            <div class="uk-grid-large" data-uk-grid>
                 <?php if ($this->countModules('sidestart', true)) : ?>
                     <aside class="uk-width-1-1 uk-width-1-4@m uk-visible@m">
                         <div data-uk-sticky="offset: 92; bottom: true;">
@@ -146,7 +156,7 @@ $this->setMetaData('viewport', 'width=device-width, initial-scale=1');
                         <h3 class="uk-text-white font uk-h4 uk-text-right"><?php echo JText::_('CONTACT_INFO'); ?></h3>
                         <ul class="uk-grid-small uk-flex-center" data-uk-grid>
                             <li class="uk-text-small uk-flex uk-flex-middle uk-width-auto uk-width-1-1@m"><i class="fas fa-map-signs fa-fw fa-lg uk-margin-left uk-text-primary"></i><span class="uk-text-white font"><?php echo $params->get('address'); ?></span></li>
-                            <li class="uk-text-small uk-flex uk-flex-middle uk-width-1-2 uk-width-1-1@m"><i class="fas fa-phone fa-flip-horizontal fa-fw fa-lg uk-margin-left uk-text-primary"></i><a href="tel:<?php echo $params->get('phone'); ?>" class="uk-text-white font ltr"><?php echo $params->get('phone'); ?></a></li>
+                            <li class="uk-text-small uk-flex uk-flex-middle uk-width-1-2 uk-width-1-1@m"><i class="fas fa-phone fa-flip-horizontal fa-fw fa-lg uk-margin-left uk-text-primary"></i><a href="tel:<?php echo $params->get('phone'); ?>" class="uk-text-white font ltr ss02"><?php echo $params->get('phone'); ?></a></li>
                             <li class="uk-text-small uk-flex uk-flex-middle uk-width-1-2 uk-width-1-1@m"><i class="fas fa-envelope-open-text fa-fw fa-lg uk-margin-left uk-text-primary"></i><a href="mailto:<?php echo $params->get('email'); ?>" class="uk-text-white font ltr"><?php echo $params->get('email'); ?></a></li>
                         </ul>
                         <ul class="uk-grid-small uk-child-width-auto uk-margin-medium-top uk-flex-center uk-flex-right@m social" data-uk-grid>

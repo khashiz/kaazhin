@@ -31,10 +31,10 @@ use Joomla\CMS\Layout\LayoutHelper;
 <div class="uk-margin-small-bottom uk-text-zero">
     <div class="uk-grid-small uk-grid-divider" data-uk-grid>
         <div>
-            <span class="uk-text-tiny font uk-text-muted">۹ خرداد ۱۴۰۱</span>
+            <span class="uk-text-tiny font uk-text-muted f500">۹ خرداد ۱۴۰۱</span>
         </div>
         <div>
-            <span class="uk-text-tiny font uk-text-muted">۲۸۳ بازدید</span>
+            <span class="uk-text-tiny font uk-text-muted f500">۲۸۳ بازدید</span>
         </div>
     </div>
 </div>
@@ -42,7 +42,7 @@ use Joomla\CMS\Layout\LayoutHelper;
 <?php if ($params->get('item_title')) : ?>
 
 	<?php $item_heading = $params->get('item_heading', 'h4'); ?>
-	<<?php echo $item_heading; ?> class="uk-margin-remove-top uk-margin-bottom newsflash-title">
+	<<?php echo $item_heading; ?> class="uk-margin-remove-top uk-margin-small-bottom newsflash-title">
 	<?php if ($item->link !== '' && $params->get('link_titles')) : ?>
 		<a class="uk-text-secondary uk-display-block font uk-h4 uk-margin-remove f500" href="<?php echo $item->link; ?>">
 			<?php echo $item->title; ?>

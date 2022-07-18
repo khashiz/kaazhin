@@ -47,6 +47,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$reset		= $this->getProperty('RESET', 'NO');
+		$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 		$attr		= $this->getAttributes('button');
 		$type 		= $this->getProperty('INPUTTYPE', 'submit');
 		$additional = '';
@@ -83,7 +84,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 		$html .= $additional;
 		// Add the label & close the tag
 		if ($buttonType == 'button') {
-			$html .= ' >'.$this->escape($label).'</button>';
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		} else {
 			$html .= ' value="'.$this->escape($label).'" />';
 		}
@@ -114,7 +115,7 @@ class RSFormProFieldSubmitButton extends RSFormProFieldButton
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}

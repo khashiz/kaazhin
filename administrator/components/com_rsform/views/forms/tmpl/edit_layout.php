@@ -13,7 +13,7 @@ defined('_JEXEC') or die('Restricted access');
 	<?php foreach ($layouts as $layout) { ?>
 		<div class="rsform_layout_box">
 			<label for="formLayout<?php echo ucfirst($layout); ?>" class="radio">
-				<input type="radio" id="formLayout<?php echo ucfirst($layout); ?>" name="FormLayoutName" value="<?php echo $layout; ?>" onclick="saveLayoutName(this.value);" <?php if ($this->form->FormLayoutName == $layout) { ?>checked="checked"<?php } ?> /><?php echo JText::_('RSFP_LAYOUT_'.str_replace('-', '_', $layout));?><br/>
+				<input type="radio" id="formLayout<?php echo ucfirst($layout); ?>" name="FormLayoutName" value="<?php echo $layout; ?>" onclick="saveLayoutName(this.value);" <?php if ($this->form->FormLayoutName == $layout) { ?>checked="checked"<?php } ?> /> <?php echo JText::_('RSFP_LAYOUT_'.str_replace('-', '_', $layout));?><br/>
 			</label>
 			<?php echo JHtml::_('image', 'com_rsform/admin/layouts/' . $layout . '.gif', JText::_('RSFP_LAYOUT_'.str_replace('-', '_', $layout)), array('width' => 175), true); ?>
 		</div>

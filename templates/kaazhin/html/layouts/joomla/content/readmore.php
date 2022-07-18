@@ -18,7 +18,7 @@ $item      = $displayData['item'];
 $direction = Factory::getLanguage()->isRtl() ? 'left' : 'right';
 ?>
 
-<div class="uk-text-zero">
+<div class="uk-text-zero uk-position-relative uk-position-z-index">
 	<?php if (!$params->get('access-view')) : ?>
 		<a class="btn btn-secondary" href="<?php echo $displayData['link']; ?>" aria-label="<?php echo Text::_('JGLOBAL_REGISTER_TO_READ_MORE') . ' ' . $this->escape($item->title); ?>">
 			<?php echo '<span class="icon-chevron-' . $direction . '" aria-hidden="true"></span>'; ?>
@@ -33,7 +33,7 @@ $direction = Factory::getLanguage()->isRtl() ? 'left' : 'right';
 			<?php endif; ?>
 		</a>
 	<?php elseif ($params->get('show_readmore_title', 0) == 0) : ?>
-		<a class="font uk-text-secondary uk-position-relative uk-display-inline-block uk-text-small readmore" href="<?php echo $displayData['link']; ?>" aria-label="<?php echo Text::sprintf('JGLOBAL_READ_MORE_TITLE', $this->escape($item->title)); ?>">
+		<a class="font f700 uk-text-secondary uk-position-relative uk-display-inline-block uk-text-small readmore" href="<?php echo $displayData['link']; ?>" aria-label="<?php echo Text::sprintf('JGLOBAL_READ_MORE_TITLE', $this->escape($item->title)); ?>">
 			<?php echo Text::_('JGLOBAL_READ_MORE'); ?></a>
 	<?php else : ?>
 		<a class="btn btn-secondary" href="<?php echo $displayData['link']; ?>" aria-label="<?php echo Text::sprintf('JGLOBAL_READ_MORE_TITLE', $this->escape($item->title)); ?>">

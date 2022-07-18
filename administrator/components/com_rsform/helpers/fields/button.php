@@ -45,6 +45,7 @@ class RSFormProFieldButton extends RSFormProField
 		$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 		$label		= $this->getProperty('LABEL', '');
 		$reset		= $this->getProperty('RESET', 'NO');
+		$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 		$attr		= $this->getAttributes('button');
 		$type 		= 'button';
 		$additional = '';
@@ -76,7 +77,7 @@ class RSFormProFieldButton extends RSFormProField
 		$html .= $additional;
 		// Add the label & close the tag
 		if ($buttonType == 'button') {
-			$html .= ' >'.$this->escape($label).'</button>';
+			$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 		} else {
 			$html .= ' value="'.$this->escape($label).'" />';
 		}
@@ -107,7 +108,7 @@ class RSFormProFieldButton extends RSFormProField
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}
@@ -156,6 +157,7 @@ class RSFormProFieldButton extends RSFormProField
 			$buttonType = $this->getProperty('BUTTONTYPE', 'TYPEINPUT') == 'TYPEBUTTON' ? 'button' : 'input';
 			$label  	= $this->getProperty('PREVBUTTON', JText::_('JPREV'));
 			$label		= empty($label) ? JText::_('JPREV') : $label;
+			$allowHtml	= $this->getProperty('ALLOWHTML', 'NO');
 			$id			= $this->getId();
 			$attr		= $this->getAttributes('previous');
 			$additional = '';
@@ -188,7 +190,7 @@ class RSFormProFieldButton extends RSFormProField
 			$html .= $additional;
 			// Add the label & close the tag
 			if ($buttonType == 'button') {
-				$html .= ' >'.$this->escape($label).'</button>';
+				$html .= ' >' . ($allowHtml ? $label : $this->escape($label)) . '</button>';
 			} else {
 				$html .= ' value="'.$this->escape($label).'" />';
 			}

@@ -751,7 +751,7 @@ class RSFormProHelper
 
 	public static function htmlEscape($val)
 	{
-		return htmlentities($val, ENT_COMPAT, 'UTF-8');
+		return empty($val) ? $val : htmlentities($val, ENT_COMPAT, 'UTF-8');
 	}
 
 	public static function explode($value)
@@ -1108,6 +1108,8 @@ class RSFormProHelper
 				// {component:image}
                 if ($component->ComponentTypeId == RSFORM_FIELD_FILEUPLOAD)
                 {
+					$hasMultiple = !empty($property['MULTIPLE']) && $property['MULTIPLE'] === 'YES';
+
 					$separator = '<br />';
 					if (!empty($property['FILESSEPARATOR']))
 					{
@@ -1116,7 +1118,7 @@ class RSFormProHelper
 
 					if (!empty($submission->values[$property['NAME']]))
 					{
-						if (!empty($property['MULTIPLE']) && $property['MULTIPLE'] === 'YES')
+						if ($hasMultiple)
 						{
 							$value = RSFormProHelper::explode($submission->values[$property['NAME']]);
 						}
@@ -1191,6 +1193,26 @@ class RSFormProHelper
                             }
                         }
                     }
+
+					if ($hasMultiple)
+					{
+						foreach ($value as $index => $actualValue)
+						{
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':value}';
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':path}';
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':localpath}';
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':filename}';
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':image}';
+							$placeholders[] = '{'.$property['NAME'] . '_' . $index . ':localimage}';
+
+							$values[] = '<a href="'. $root . JRoute::_('index.php?option=com_rsform&task=submissions.viewfile&hash=' . md5($submission->SubmissionId . $secret . $property['NAME']) . '&file=' . md5($actualValue) . $Itemid) . '">'.RSFormProHelper::htmlEscape(basename($actualValue)).'</a>';
+							$values[] = $parsed['path'][$index];
+							$values[] = $parsed['localpath'][$index];
+							$values[] = $parsed['filename'][$index];
+							$values[] = $parsed['image'][$index];
+							$values[] = $parsed['localimage'][$index];
+						}
+					}
                 }
             }
         }
@@ -1204,7 +1226,7 @@ class RSFormProHelper
 		$root 				= $mainframe->isClient('administrator') ? JUri::root() : $u->toString(array('scheme','host', 'port'));
 		$confirmation_hash 	= md5($submission->SubmissionId.$formId.$submission->DateSubmitted);
 		$hash_link 			= 'index.php?option=com_rsform&task=confirm&hash='.$confirmation_hash;
-        $delete_link 		= 'index.php?option=com_rsform&task=deletesubmission&hash='.$submission->SubmissionHash;
+        $delete_link 		= 'index.php?option=com_rsform&view=deletesubmission&hash='.$submission->SubmissionHash;
 		$confirmation 		= $root.($mainframe->isClient('administrator') ? $hash_link : JRoute::_($hash_link));
 		$deletion 		    = $root.($mainframe->isClient('administrator') ? $delete_link : JRoute::_($delete_link));
 
@@ -1217,6 +1239,7 @@ class RSFormProHelper
                 '{global:fullname}'     	 => $user->name,
                 '{global:userip}'       	 => $submission->UserIp,
                 '{global:date_added}'   	 => RSFormProHelper::getDate($submission->DateSubmitted),
+                '{global:utc_date_added}'    => $submission->DateSubmitted,
                 '{global:sitename}'     	 => $config->get('sitename'),
                 '{global:siteurl}'      	 => JUri::root(),
                 '{global:confirmation}' 	 => $confirmation,
@@ -1681,6 +1704,8 @@ class RSFormProHelper
 
 		$hasAjax = (bool) $form->AjaxValidation;
 
+		static $hasAjaxRoot = false;
+
 		$all_data = RSFormProHelper::getComponentProperties($components);
 		foreach ($components as $component) {
 			if (in_array($component->ComponentTypeId, RSFormProHelper::$captchaFields))
@@ -1924,7 +1949,7 @@ class RSFormProHelper
 				$with_progress 	  = array($p+1, $total_pages, $p+1 == $total_pages ? 100 : $step*($p+1));
 				$progress_script .= "if (page == ".$p.") document.getElementById('rsform_progress_".$formId."').innerHTML = '".($progress['show'] ? str_replace($replace_progress, $with_progress, $progress['text']) : '')."';";
 			}
-			$formLayout .= "\n".'<script type="text/javascript">'."\n".'function rsfp_showProgress_'.$formId.'(page) {'."\n".$progress_script."\n".'}'."\n".'</script>';
+			RSFormProAssets::addScriptDeclaration('function rsfp_showProgress_' . $formId . '(page) { ' . $progress_script . ' }');
 		}
 
 		$encType = '';
@@ -1956,7 +1981,7 @@ class RSFormProHelper
 			foreach ($prices as $componentName => $values) {
 				$script .= "RSFormProPrices['".addslashes($formId.'_'.$componentName)."'] = ".json_encode($values).";\n";
 			}
-			$formLayout .= "\n".'<script type="text/javascript">'."\n".$script."\n".'</script>'."\n";
+			RSFormProAssets::addScriptDeclaration($script);
 		}
 
 		if ($YUICalendars || $jQueryCalendars)
@@ -1985,11 +2010,12 @@ class RSFormProHelper
 		}
 
 		if (!empty($pages)) {
-			$formLayout .= '<script type="text/javascript">rsfp_changePage('.$formId.', '.$start_page.', '.count($pages).');</script>'."\n";
+			RSFormProAssets::addScriptDeclaration(sprintf('window.addEventListener(\'DOMContentLoaded\', function(){ rsfp_changePage(%d, %d, %d); });', $formId, $start_page, count($pages)));
 		}
 
-		if ($hasAjax) {
-			$formLayout .= '<script type="text/javascript">RSFormPro.Ajax.URL = '.json_encode(JRoute::_('index.php?option=com_rsform&task=ajaxValidate', false)).';</script>';
+		if ($hasAjax && !$hasAjaxRoot) {
+			$hasAjaxRoot = true;
+			RSFormProAssets::addScriptDeclaration('RSFormPro.Ajax.URL = ' . json_encode(JRoute::_('index.php?option=com_rsform&task=ajaxValidate', false)) . ';');
 		}
 
 		$validationParams = array(
@@ -2014,48 +2040,49 @@ class RSFormProHelper
 		$mainframe->triggerEvent('onRsformFrontendAJAXScriptCreate', array(array('script' => &$ajaxScript, 'formId' => $formId)));
 
 		if ($hasAjax || $ajaxScript) {
-			$formLayout .= "\n".'<script type="text/javascript">';
-			$formLayout .= "\n".'ajaxExtraValidationScript['.$formId.'] = function(task, formId, data){ '."\n";
-			$formLayout .= 'var formComponents = {};'."\n";
+			$script = 'ajaxExtraValidationScript['.$formId.'] = function(task, formId, data){ '."\n";
+			$script .= 'var formComponents = {};'."\n";
 			foreach ($components as $component) {
 				if (in_array($component->ComponentTypeId, array(RSFORM_FIELD_BUTTON, RSFORM_FIELD_FILEUPLOAD, RSFORM_FIELD_FREETEXT, RSFORM_FIELD_HIDDEN, RSFORM_FIELD_SUBMITBUTTON, RSFORM_FIELD_TICKET, RSFORM_FIELD_PAGEBREAK))) {
 					continue;
 				}
 
-				$formLayout .= "formComponents[".$component->ComponentId."]='".$component->name."';";
+				$script .= "formComponents[".$component->ComponentId."]='".$component->name."';";
 			}
-			$formLayout .= "\n".'RSFormPro.Ajax.displayValidationErrors(formComponents, task, formId, data);'."\n";
+			$script .= "\n".'RSFormPro.Ajax.displayValidationErrors(formComponents, task, formId, data);'."\n";
 			// has this been modified?
 			if ($ajaxScript) {
-				$formLayout .= $ajaxScript;
+				$script .= $ajaxScript;
 			}
-			$formLayout .= '};'."\n";
-			$formLayout .= '</script>';
+			$script .= '};'."\n";
+
+			RSFormProAssets::addScriptDeclaration($script);
 		}
 
         require_once __DIR__ . '/conditions.php';
 		if ($conditions = RSFormProConditions::getConditions($formId, $lang))
 		{
-			$formLayout .= RSFormProConditions::buildJS($formId, $conditions);
+			RSFormProAssets::addScriptDeclaration(RSFormProConditions::buildJS($formId, $conditions));
 		}
 		unset($conditions);
 
 		if ($calculations = RSFormProHelper::getCalculations($formId)) {
 			require_once dirname(__FILE__).'/calculations.php';
 
-			$formLayout .= "\n".'<script type="text/javascript">';
-			$formLayout .= "\n".'function rsfp_Calculations'.$formId.'(){';
+			$script = 'function rsfp_Calculations' . $formId . '(){' . "\n";
+			$script .= "\t var i, thevalue;\n";
 
 			foreach ($calculations as $calculation) {
 				$expression = RSFormProCalculations::expression($calculation, $formId);
-				$formLayout .= "\n".$expression."\n";
+				$script .= "\n".$expression."\n";
 			}
 
-			$formLayout .= "\n".'}';
-			$formLayout .= "\n".'rsfp_Calculations'.$formId.'();';
-			$formLayout .= RSFormProCalculations::getFields($calculations,$formId);
-			$formLayout .= "\n".'RSFormPro.Calculations.addEvents('.$formId.',rsfpCalculationFields'.$formId.');';
-			$formLayout .= "\n".'</script>';
+			$script .= "\n".'}';
+			$script .= RSFormProCalculations::getFields($calculations,$formId);
+			$script .= "\n".'RSFormPro.Calculations.addEvents('.$formId.',rsfpCalculationFields'.$formId.');';
+			$script .= "\n" . 'window.addEventListener(\'DOMContentLoaded\', rsfp_Calculations' . $formId . ');';
+
+			RSFormProAssets::addScriptDeclaration($script);
 		}
 
 		eval($form->ScriptDisplay);
@@ -2331,34 +2358,10 @@ class RSFormProHelper
 			}
 
 			// get mappings data
-			$query = $db->getQuery(true)
-                ->select('*')
-                ->from($db->qn('#__rsform_mappings'))
-                ->where($db->qn('formId') . ' = ' . $db->q($formId))
-                ->order($db->qn('ordering') . ' ' . $db->escape('asc'));
-			$mappings = $db->setQuery($query)->loadObjectList();
+			$mappings = RSFormProHelper::getMappings($formId);
 
 			// get Post to another location
-            $query = $db->getQuery(true)
-                ->select('*')
-                ->from($db->qn('#__rsform_posts'))
-                ->where($db->qn('form_id') . ' = ' . $db->q($formId))
-                ->where($db->qn('enabled') . ' = ' . $db->q(1));
-			$silentPost = $db->setQuery($query)->loadObject();
-
-			if ($silentPost && !empty($silentPost->fields)) {
-				$silentPost->fields = json_decode($silentPost->fields);
-				if (!is_array($silentPost->fields)) {
-					$silentPost->fields = array();
-				}
-			}
-
-			if ($silentPost && !empty($silentPost->headers)) {
-				$silentPost->headers = json_decode($silentPost->headers);
-				if (!is_array($silentPost->headers)) {
-					$silentPost->headers = array();
-				}
-			}
+			$silentPost = RSFormProHelper::getSilentPost($formId);
 
 			eval($form->ScriptProcess2);
 
@@ -2394,55 +2397,9 @@ class RSFormProHelper
 				$thankYouMessage .= $continueButton;
 			}
 
-			//Mappings
-			if (!empty($mappings))
-			{
-				$lastinsertid = '';
-				$replacewith = $with;
-				array_walk($replacewith, array('RSFormProHelper', 'escapeSql'));
-
-				foreach ($mappings as $mapping)
-				{
-					try {
-						//get the query
-						$query = RSFormProHelper::getMappingQuery($mapping);
-
-						//replace the placeholders
-						$query = str_replace($replace, $replacewith, $query);
-
-						//replace the last insertid placeholder
-						$query = str_replace('{last_insert_id}', $lastinsertid, $query);
-
-						if ($mapping->connection) {
-							$options = array(
-								'driver' => isset($mapping->driver) ? $mapping->driver : 'mysql',
-								'host' => $mapping->host,
-								'port' => $mapping->port,
-								'user' => $mapping->username,
-								'password' => $mapping->password,
-								'database' => $mapping->database
-							);
-
-							$database = JDatabaseDriver::getInstance($options);
-
-							//is a valid database connection
-							if (is_a($database, 'JException')) continue;
-
-							$database->setQuery($query);
-							$database->execute();
-							$lastinsertid = $database->insertid();
-
-						} else {
-							$db->setQuery($query);
-							$db->execute();
-							$lastinsertid = $db->insertid();
-						}
-
-					} catch (Exception $e) {
-						$mainframe->enqueueMessage($e->getMessage(), 'warning');
-					}
-				}
-			}
+			// Mappings
+			$mainframe->triggerEvent('onRsformBeforeMappings', array('SubmissionId' => $SubmissionId, 'formId' => $formId, 'mappings' => &$mappings));
+			RSFormProHelper::doMappings($mappings, array('replace' => $replace, 'with' => $with));
 
 			if (!$form->Keepdata)
 			{
@@ -2460,110 +2417,8 @@ class RSFormProHelper
 			    $db->setQuery($query)->execute();
 			}
 
-			if ($silentPost && !empty($silentPost->url) && !in_array($silentPost->url, array('http://', 'https://')))
-			{
-				// Set URL to send data to
-				$url = $silentPost->url;
-
-				// Prepare data
-				if (!empty($silentPost->fields)) {
-					$data = '';
-					foreach ($silentPost->fields as $field) {
-						$field->name  = str_replace($replace, $with, $field->name);
-						$field->value = str_replace($replace, $with, $field->value);
-
-						if (strlen($field->name)) {
-							$data .= urlencode($field->name).'='.urlencode($field->value).'&';
-						}
-					}
-
-					$data = rtrim($data, '&');
-				} else {
-					$data = http_build_query($post);
-				}
-
-				try {
-					// Do we need to send data silently?
-					if ($silentPost->silent) {
-                        // Map headers
-						$silentPostHeaders = array();
-						if (!empty($silentPost->headers))
-						{
-							$hasJson = false;
-							foreach ($silentPost->headers as $field)
-							{
-								$headerName  = str_replace($replace, $with, $field->name);
-								$headerValue = str_replace($replace, $with, $field->value);
-								$silentPostHeaders[$headerName] = $headerValue;
-
-								if (strtolower($headerName) === 'content-type' && strpos(strtolower($headerValue), 'json') !== false)
-								{
-									$hasJson = true;
-								}
-							}
-
-							if ($hasJson)
-							{
-								parse_str($data, $dataArray);
-								$data = json_encode($dataArray);
-							}
-						}
-
-						// Get HTTP connector
-						$http = JHttpFactory::getHttp();
-
-						if ($silentPost->method) {
-							// POST
-							$http->post($url, $data, $silentPostHeaders);
-						} else {
-							// GET
-							$http->get($url.(strpos($url, '?') === false ? '?' : '&').$data, $silentPostHeaders);
-						}
-					} else {
-						// Try to follow the URL
-						if ($silentPost->method) {
-							@ob_end_clean();
-
-							$dataArray = explode('&', $data);
-							// Create a hidden form that we submit through Javascript
-							?>
-							<form id="formSubmit" method="post" action="<?php echo RSFormProHelper::htmlEscape($url); ?>">
-								<?php
-								if (!empty($dataArray) && is_array($dataArray)) {
-									foreach ($dataArray as $value) {
-										list($key, $value) = explode('=', $value, 2);
-										?>
-										<input type="hidden" name="<?php echo RSFormProHelper::htmlEscape(urldecode($key)); ?>" value="<?php echo RSFormProHelper::htmlEscape(urldecode($value)); ?>" />
-										<?php
-									}
-								}
-								?>
-							</form>
-							<script type="text/javascript">
-								function formSubmit() {
-									if (typeof document.getElementById("formSubmit").submit == "function") {
-										document.getElementById("formSubmit").submit()
-									} else {
-										document.createElement("form").submit.call(document.getElementById("formSubmit"));
-									}
-								}
-
-								try {
-									window.addEventListener ? window.addEventListener("load",formSubmit,false) : window.attachEvent("onload",formSubmit);
-								} catch (err) {
-									formSubmit();
-								}
-							</script>
-							<?php
-							$mainframe->close();
-						} else {
-							$mainframe->redirect($url.(strpos($url, '?') === false ? '?' : '&').$data);
-						}
-					}
-				} catch (Exception $e) {
-					$mainframe->enqueueMessage($e->getMessage(), 'warning');
-				}
-			}
+			$mainframe->triggerEvent('onRsformBeforeSilentPost', array('SubmissionId' => $SubmissionId, 'formId' => $formId, 'silentPost' => &$silentPost));
+			RSFormProHelper::doSilentPost($silentPost, array('replace' => $replace, 'with' => $with, 'post' => $post));
 
 			// Cache workaround #2
 			if ($cache_enabled)
@@ -3600,6 +3455,7 @@ class RSFormProHelper
 					'{global:submissionid}',
 					'{global:submission_id}',
 					'{global:date_added}',
+					'{global:utc_date_added}',
 					'{global:language}',
 					'{global:formtitle}'
 				);
@@ -3632,26 +3488,14 @@ class RSFormProHelper
 			return $placeholders;
 		}
 
-		foreach ($placeholders as $placeholder)
-		{
-			$html .= '<pre>' . $placeholder . '</pre>';
-		}
-
-		$html .= '<br />';
+		$html .= '<pre>' . implode("\n", $placeholders) . '</pre><br />';
 
 		return $html;
 	}
 
-	public static function generateQuickAdd($field, $key){
-		$html = '<strong>'.$field['name'].'</strong><br/>';
-
-		foreach($field[$key] as $placeholder) {
-			$html .= '<pre>'. $placeholder .'</pre>';
-		}
-
-		$html .= '<br/>';
-
-		return $html;
+	public static function generateQuickAdd($field, $key)
+	{
+		return '<strong>' . $field['name'] . '</strong><br/><pre>' . implode("\n", $field[$key]) . '</pre><br />';
 	}
 
 	public static function getFormLayouts($formId = 0)
@@ -3663,5 +3507,316 @@ class RSFormProHelper
         JFactory::getApplication()->triggerEvent('onRsformBackendLayoutsDefine', array(&$layouts, $formId));
 
         return $layouts;
+    }
+
+    public static function doSilentPost($silentPost, $config = array())
+    {
+    	if (array_key_exists('replace', $config))
+	    {
+	    	$replace = $config['replace'];
+	    }
+	    if (array_key_exists('with', $config))
+	    {
+		    $with = $config['with'];
+	    }
+	    if (array_key_exists('post', $config))
+	    {
+		    $post = $config['post'];
+	    }
+	    if (array_key_exists('SubmissionId', $config))
+	    {
+		    list($replace, $with) = RSFormProHelper::getReplacements($config['SubmissionId']);
+
+		    require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';
+		    $submission = RSFormProSubmissionsHelper::getSubmission($config['SubmissionId']);
+
+		    $db = JFactory::getDbo();
+		    $query = $db->getQuery(true);
+		    $query->select($db->qn('p.PropertyValue', 'ComponentName'))
+			    ->select($db->qn('ct.ComponentTypeName'))
+			    ->select($db->qn('ct.ComponentTypeId'))
+			    ->from($db->qn('#__rsform_components','c'))
+			    ->join('left', $db->qn('#__rsform_properties','p').' ON '.$db->qn('p.ComponentId').' = '.$db->qn('c.ComponentId'))
+			    ->join('left', $db->qn('#__rsform_component_types','ct').' ON '.$db->qn('c.ComponentTypeId').' = '.$db->qn('ct.ComponentTypeId'))
+			    ->where($db->qn('c.FormId') . ' = ' . $db->q($submission->FormId))
+			    ->where($db->qn('p.PropertyName') . ' = ' . $db->q('NAME'))
+			    ->where($db->qn('c.Published') . ' = ' . $db->q(1))
+			    ->order($db->qn('c.Order') . ' ' . $db->escape('asc'));
+
+		    $fields = $db->setQuery($query)->loadObjectList();
+
+		    // Generate POST
+		    $post = array();
+		    foreach ($fields as $field)
+		    {
+		    	if (!isset($submission->values[$field->ComponentName]))
+			    {
+			    	continue;
+			    }
+
+			    $post[$field->ComponentName] = $submission->values[$field->ComponentName];
+
+		    	if (strpos($field->ComponentTypeName, 'checkbox') !== false || strpos($field->ComponentTypeName, 'select') !== false)
+			    {
+				    $post[$field->ComponentName] = RSFormProHelper::explode($submission->values[$field->ComponentName]);
+			    }
+		    }
+	    }
+
+	    if (empty($replace) || empty($with) || empty($post))
+	    {
+	    	return false;
+	    }
+
+	    if ($silentPost && !empty($silentPost->url) && !in_array($silentPost->url, array('http://', 'https://')))
+	    {
+		    // Set URL to send data to
+		    $url = $silentPost->url;
+
+		    // Prepare data
+		    if (!empty($silentPost->fields))
+		    {
+			    $data = '';
+
+			    foreach ($silentPost->fields as $field)
+			    {
+				    $field->name  = str_replace($replace, $with, $field->name);
+				    $field->value = str_replace($replace, $with, $field->value);
+
+				    if (strlen($field->name))
+				    {
+					    $data .= urlencode($field->name).'='.urlencode($field->value).'&';
+				    }
+			    }
+
+			    $data = rtrim($data, '&');
+		    }
+		    else
+		    {
+			    $data = http_build_query($post);
+		    }
+
+		    try
+		    {
+			    // Do we need to send data silently?
+			    if ($silentPost->silent)
+			    {
+				    // Map headers
+				    $silentPostHeaders = array();
+				    if (!empty($silentPost->headers))
+				    {
+					    $hasJson = false;
+					    foreach ($silentPost->headers as $field)
+					    {
+						    $headerName  = str_replace($replace, $with, $field->name);
+						    $headerValue = str_replace($replace, $with, $field->value);
+						    $silentPostHeaders[$headerName] = $headerValue;
+
+						    if (strtolower($headerName) === 'content-type' && strpos(strtolower($headerValue), 'json') !== false)
+						    {
+							    $hasJson = true;
+						    }
+					    }
+
+					    if ($hasJson)
+					    {
+						    parse_str($data, $dataArray);
+						    $data = json_encode($dataArray);
+					    }
+				    }
+
+				    // Get HTTP connector
+				    $http = JHttpFactory::getHttp();
+
+				    if ($silentPost->method)
+				    {
+					    // POST
+					    $http->post($url, $data, $silentPostHeaders);
+				    }
+				    else
+				    {
+					    // GET
+					    $http->get($url.(strpos($url, '?') === false ? '?' : '&').$data, $silentPostHeaders);
+				    }
+			    }
+			    else
+			    {
+				    // Try to follow the URL
+				    if ($silentPost->method)
+				    {
+					    @ob_end_clean();
+
+					    $dataArray = explode('&', $data);
+					    // Create a hidden form that we submit through Javascript
+					    ?>
+					    <form id="formSubmit" method="post" action="<?php echo RSFormProHelper::htmlEscape($url); ?>">
+						    <?php
+						    if (!empty($dataArray) && is_array($dataArray)) {
+							    foreach ($dataArray as $value) {
+								    list($key, $value) = explode('=', $value, 2);
+								    ?>
+								    <input type="hidden" name="<?php echo RSFormProHelper::htmlEscape(urldecode($key)); ?>" value="<?php echo RSFormProHelper::htmlEscape(urldecode($value)); ?>" />
+								    <?php
+							    }
+						    }
+						    ?>
+					    </form>
+					    <script type="text/javascript">
+                            function formSubmit() {
+                                if (typeof document.getElementById("formSubmit").submit == "function") {
+                                    document.getElementById("formSubmit").submit()
+                                } else {
+                                    document.createElement("form").submit.call(document.getElementById("formSubmit"));
+                                }
+                            }
+
+                            try {
+                                window.addEventListener ? window.addEventListener("load",formSubmit,false) : window.attachEvent("onload",formSubmit);
+                            } catch (err) {
+                                formSubmit();
+                            }
+					    </script>
+					    <?php
+					    JFactory::getApplication()->close();
+				    }
+				    else
+				    {
+					    JFactory::getApplication()->redirect($url.(strpos($url, '?') === false ? '?' : '&').$data);
+				    }
+			    }
+		    }
+		    catch (Exception $e)
+		    {
+			    JFactory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
+			    return false;
+		    }
+	    }
+
+	    return true;
+    }
+
+    public static function getSilentPost($formId)
+    {
+    	$db = JFactory::getDbo();
+
+	    $query = $db->getQuery(true)
+		    ->select('*')
+		    ->from($db->qn('#__rsform_posts'))
+		    ->where($db->qn('form_id') . ' = ' . $db->q($formId))
+		    ->where($db->qn('enabled') . ' = ' . $db->q(1));
+	    $silentPost = $db->setQuery($query)->loadObject();
+
+	    if ($silentPost && !empty($silentPost->fields))
+	    {
+		    $silentPost->fields = json_decode($silentPost->fields);
+		    if (!is_array($silentPost->fields))
+		    {
+			    $silentPost->fields = array();
+		    }
+	    }
+
+	    if ($silentPost && !empty($silentPost->headers))
+	    {
+		    $silentPost->headers = json_decode($silentPost->headers);
+		    if (!is_array($silentPost->headers))
+		    {
+			    $silentPost->headers = array();
+		    }
+	    }
+
+	    return $silentPost;
+    }
+
+    public static function doMappings($mappings, $config = array())
+    {
+	    if (empty($mappings))
+	    {
+	    	return false;
+	    }
+
+	    $db = JFactory::getDbo();
+
+	    if (array_key_exists('replace', $config))
+	    {
+		    $replace = $config['replace'];
+	    }
+	    if (array_key_exists('with', $config))
+	    {
+		    $with = $config['with'];
+	    }
+	    if (array_key_exists('SubmissionId', $config))
+	    {
+		    list($replace, $with) = RSFormProHelper::getReplacements($config['SubmissionId']);
+	    }
+	    if (empty($replace) || empty($with))
+	    {
+		    return false;
+	    }
+
+	    $lastinsertid = '';
+	    array_walk($with, array('RSFormProHelper', 'escapeSql'));
+
+	    foreach ($mappings as $mapping)
+	    {
+		    try
+		    {
+			    //get the query
+			    $query = RSFormProHelper::getMappingQuery($mapping);
+
+			    //replace the placeholders
+			    $query = str_replace($replace, $with, $query);
+
+			    //replace the last insertid placeholder
+			    $query = str_replace('{last_insert_id}', $lastinsertid, $query);
+
+			    if ($mapping->connection)
+			    {
+				    $options = array(
+					    'driver' => isset($mapping->driver) ? $mapping->driver : 'mysql',
+					    'host' => $mapping->host,
+					    'port' => $mapping->port,
+					    'user' => $mapping->username,
+					    'password' => $mapping->password,
+					    'database' => $mapping->database
+				    );
+
+				    $database = JDatabaseDriver::getInstance($options);
+
+				    //is a valid database connection
+				    if (is_a($database, 'JException'))
+				    {
+					    continue;
+				    }
+
+				    $database->setQuery($query)->execute();
+
+				    $lastinsertid = $database->insertid();
+			    }
+			    else
+			    {
+				    $db->setQuery($query)->execute();
+
+				    $lastinsertid = $db->insertid();
+			    }
+
+		    }
+		    catch (Exception $e)
+		    {
+			    JFactory::getApplication()->enqueueMessage($e->getMessage(), 'warning');
+		    }
+	    }
+
+	    return true;
+    }
+
+    public static function getMappings($formId)
+    {
+	    $db = JFactory::getDbo();
+	    $query = $db->getQuery(true)
+		    ->select('*')
+		    ->from($db->qn('#__rsform_mappings'))
+		    ->where($db->qn('formId') . ' = ' . $db->q($formId))
+		    ->order($db->qn('ordering') . ' ' . $db->escape('asc'));
+	    return $db->setQuery($query)->loadObjectList();
     }
 }

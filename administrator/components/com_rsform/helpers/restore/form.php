@@ -143,7 +143,7 @@ class RSFormProRestoreForm
 		
 		if (!$this->form->save($data))
 		{
-			throw new Exception(sprintf('Form %s could not be saved!', $this->form->FormTitle));
+			throw new Exception(sprintf('Form %s could not be saved. Error reported is: %s', $this->form->FormTitle, $this->form->getError()));
 		}
 
 		if (!empty($oldFormId) && $oldFormId != $this->form->FormId)

@@ -101,7 +101,7 @@ $this->loadTemplate('grid_modal_body'));
 					<div id="rsfp-grid-field-id-<?php echo $field->id; ?>" class="rsfp-grid-field<?php echo $fieldClasses ? ' ' . implode(' ', $fieldClasses) : ''; ?>">
 						<strong class="pull-left rsfp-grid-field-name"><?php echo JHtml::_('grid.id', $i, $field->id); ?> <?php echo $this->escape($this->show_caption ? $field->caption : $field->name); ?><?php if ($field->required) { ?> (*)<?php } ?></strong>
 						<div class="btn-group pull-right rsfp-grid-field-buttons">
-							<button type="button" class="btn btn-secondary btn-small btn-sm" onclick="displayTemplate('<?php echo $field->type_id; ?>','<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_EDIT'); ?></button>
+							<button type="button" class="btn btn-secondary btn-small btn-sm" onclick="RSFormPro.editModal.display('<?php echo $field->type_id; ?>','<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_EDIT'); ?></button>
 							<button type="button" class="btn btn-small btn-sm btn-danger" onclick="if (confirm(Joomla.JText._('RSFP_REMOVE_COMPONENT_CONFIRM').replace('%s', '<?php echo $this->escape($field->name); ?>'))) removeComponent('<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_DELETE'); ?></button>
 						</div>
 						<div class="clearfix"></div>
@@ -140,7 +140,7 @@ $this->loadTemplate('grid_modal_body'));
 		<div id="rsfp-grid-field-id-<?php echo $field->id; ?>" class="rsfp-grid-field<?php if (!$field->published) { ?> rsfp-grid-unpublished-field<?php } ?>">
 			<strong class="pull-left rsfp-grid-field-name"><?php echo JHtml::_('grid.id', $i, $field->id); ?> <?php echo $this->escape($this->show_caption ? $field->caption : $field->name); ?><?php if ($field->required) { ?> (*)<?php } ?></strong>
 			<div class="btn-group pull-right">
-				<button type="button" class="btn btn-secondary btn-small btn-sm" onclick="displayTemplate('<?php echo $field->type_id; ?>','<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_EDIT'); ?></button>
+				<button type="button" class="btn btn-secondary btn-small btn-sm" onclick="RSFormPro.editModal.display('<?php echo $field->type_id; ?>','<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_EDIT'); ?></button>
 				<button type="button" class="btn btn-small btn-sm btn-danger" onclick="if (confirm(Joomla.JText._('RSFP_REMOVE_COMPONENT_CONFIRM').replace('%s', '<?php echo $this->escape($field->name); ?>'))) removeComponent('<?php echo $field->id; ?>');"><?php echo JText::_('RSFP_DELETE'); ?></button>
 			</div>
 			<?php if ($this->show_previews) { ?>

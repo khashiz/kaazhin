@@ -211,10 +211,13 @@ class RSFormProFieldFileUpload extends RSFormProField
 			'COM_RSFORM_MAXFILES_REQUIRED' => JText::_('COM_RSFORM_MAXFILES_REQUIRED'),
 		);
 
+		$script = '';
 		foreach ($messages as $key => $message)
 		{
-			$this->addScriptDeclaration('RSFormPro.Translations.add(' . $this->formId . ', ' . json_encode($this->name) . ', ' . json_encode($key) . ', ' . json_encode($message) . ');');
+			$script .= 'RSFormPro.Translations.add(' . $this->formId . ', ' . json_encode($this->name) . ', ' . json_encode($key) . ', ' . json_encode($message) . ');';
 		}
+
+		$this->addScriptDeclaration($script);
 
 		return $html;
 	}

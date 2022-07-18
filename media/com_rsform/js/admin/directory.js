@@ -139,7 +139,7 @@ function dirAutoGenerate() {
 
 function changeDirectoryAutoGenerateLayout(value) {
     stateLoading();
-    var layoutName = jQuery('[name="jform[ViewLayoutName]"]:checked').val();
+    var layoutName = document.querySelector('[name="jform[ViewLayoutName]"]:checked').value;
     var formId = document.getElementById('formId').value;
     value = parseInt(value);
 
@@ -162,8 +162,15 @@ function changeDirectoryAutoGenerateLayout(value) {
             stateDone();
         }
     };
-    xml.open('GET', 'index.php?option=com_rsform&task=directory.changeAutoGenerateLayout&formId=' + formId + '&status=' + value + '&ViewLayoutName=' + layoutName, true);
-    xml.send(null);
+    var data = [
+        'task=directory.changeAutoGenerateLayout',
+        'formId=' + formId,
+        'status=' + value,
+        'ViewLayoutName=' + layoutName
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xml.send(data.join('&'));
 }
 
 function saveDirectoryLayoutName(layoutName) {
@@ -171,8 +178,14 @@ function saveDirectoryLayoutName(layoutName) {
 
 	var formId = document.getElementById('formId').value;
     var xml = buildXmlHttp();
-    xml.open('GET', 'index.php?option=com_rsform&task=directory.savename&formId=' + formId + '&ViewLayoutName=' + layoutName, true);
-    xml.send(null);
+    var data = [
+        'task=directory.savename',
+        'formId=' + formId,
+        'ViewLayoutName=' + layoutName
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xml.send(data.join('&'));
     xml.onreadystatechange = function () {
         if (xml.readyState === 4) {
 			dirAutogenerateLayout();
@@ -186,9 +199,9 @@ function generateDirectoryLayout(alert) {
         return;
     }
 	var formId = document.getElementById('formId').value;
-	var layoutName = jQuery('[name="jform[ViewLayoutName]"]:checked').val();
-    var hideEmptyValues = jQuery('[name="jform[HideEmptyValues]"]:checked').val();
-    var showGoogleMap = jQuery('[name="jform[ShowGoogleMap]"]:checked').val();
+	var layoutName = document.querySelector('[name="jform[ViewLayoutName]"]:checked').value;
+    var hideEmptyValues = document.querySelector('[name="jform[HideEmptyValues]"]:checked').value;
+    var showGoogleMap = document.querySelector('[name="jform[ShowGoogleMap]"]:checked').value;
 
     stateLoading();
     var xml = buildXmlHttp();
@@ -202,8 +215,16 @@ function generateDirectoryLayout(alert) {
             stateDone();
         }
     };
-    xml.open('GET', 'index.php?option=com_rsform&task=directory.generate&layoutName=' + layoutName + '&formId=' + formId + '&hideEmptyValues=' + hideEmptyValues + '&showGoogleMap=' + showGoogleMap, true);
-    xml.send(null);
+    var data = [
+        'task=directory.generate',
+        'layoutName=' + layoutName,
+        'formId=' + formId,
+        'hideEmptyValues=' + hideEmptyValues,
+        'showGoogleMap=' + showGoogleMap
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xml.send(data.join('&'));
 }
 
 function saveDirectorySetting(settingName, settingValue) {
@@ -211,8 +232,15 @@ function saveDirectorySetting(settingName, settingValue) {
 
 	var formId = document.getElementById('formId').value;
     var xml = buildXmlHttp();
-    xml.open('GET', 'index.php?option=com_rsform&task=directory.savesetting&formId=' + formId + '&settingName=' + settingName + '&settingValue=' + settingValue, true);
-    xml.send(null);
+    var data = [
+        'task=directory.savesetting',
+        'formId=' + formId,
+        'settingName=' + settingName,
+        'settingValue=' + settingValue
+    ];
+    xml.open('POST', 'index.php?option=com_rsform', true);
+    xml.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xml.send(data.join('&'));
     xml.onreadystatechange = function () {
         if (xml.readyState === 4) {
 			dirAutogenerateLayout();
@@ -222,7 +250,7 @@ function saveDirectorySetting(settingName, settingValue) {
 }
 
 function dirAutogenerateLayout() {
-    if (jQuery('[name="jform[ViewLayoutAutogenerate]"]:checked').val() === '1') {
+    if (document.querySelector('[name="jform[ViewLayoutAutogenerate]"]:checked').value === '1') {
         generateDirectoryLayout(false);
     }
 }
@@ -244,7 +272,7 @@ jQuery(document).ready(function($){
 
 	toggleQuickAdd();
 
-	if (jQuery('[name="jform[ViewLayoutAutogenerate]"]:checked').val() === '0') {
+	if (document.querySelector('[name="jform[ViewLayoutAutogenerate]"]:checked').value === '0') {
 		Joomla.renderMessages({'warning': [Joomla.JText._('RSFP_SUBM_DIR_AUTOGENERATE_LAYOUT_DISABLED')]});
 	}
 });

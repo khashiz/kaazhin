@@ -392,9 +392,18 @@ class RsformController extends JControllerLegacy
     {
         $db 	= JFactory::getDbo();
         $app	= JFactory::getApplication();
-        $hash 	= $app->input->getCmd('hash');
+        $hash 	= $app->input->getCmd('hash', '');
+        $string = 'COM_RSFORM_INVALID_HASH';
 
-        if (strlen($hash) == 32)
+        if ($app->input->getMethod() === 'POST')
+		{
+			$this->checkToken();
+			$this->setRedirect(JRoute::_('index.php?option=com_rsform&view=deletesubmission&hash=' . $hash, false));
+
+			$string = 'COM_RSFORM_INVALID_HASH_REQUEST';
+		}
+
+        if (strlen($hash) === 32)
         {
             $query = $db->getQuery(true)
                 ->select($db->qn('SubmissionId'))
@@ -410,15 +419,17 @@ class RsformController extends JControllerLegacy
 
                 $app->triggerEvent('onRsformFrontendSubmissionDeletion', array(array('SubmissionId' => $submission->SubmissionId, 'hash' => $hash)));
                 $app->enqueueMessage(JText::_('COM_RSFORM_SUBMISSION_DELETED'));
+
+				$this->setRedirect(JRoute::_('index.php?option=com_rsform&view=deletesubmission&layout=complete', false));
             }
             else
             {
-                $app->enqueueMessage(JText::_('COM_RSFORM_INVALID_HASH'), 'warning');
+                $app->enqueueMessage(JText::_($string), 'warning');
             }
         }
         else
         {
-            $app->enqueueMessage(JText::_('COM_RSFORM_INVALID_HASH'), 'warning');
+            $app->enqueueMessage(JText::_($string), 'warning');
         }
     }
 	

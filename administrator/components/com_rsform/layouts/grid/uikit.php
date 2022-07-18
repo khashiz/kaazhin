@@ -55,6 +55,11 @@ class RSFormProGridUikit extends RSFormProGrid
                 $classes[] = 'uk-form-stacked';
             }
 
+			if (count($this->pages) > 1)
+			{
+				$classes[] = 'formHidden';
+			}
+
 			$html[] = '<!-- Do not remove this ID, it is used to identify the page so that the pagination script can work correctly -->';
 			$html[] = '<fieldset class="' . implode(' ', $classes) . '" id="rsform_{global:formid}_page_' . $page_index . '">';
 			foreach ($rows as $row_index => $row)

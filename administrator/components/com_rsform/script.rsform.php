@@ -882,17 +882,10 @@ class com_rsformInstallerScript
 		$app 		= JFactory::getApplication();
 		$jversion 	= new JVersion();
 		
-		// Running Joomla! 2.5
-		if (!$jversion->isCompatible('3.0.0'))
-		{
-			$app->enqueueMessage('Your version of Joomla! has reached end of life. RSForm! Pro can no longer be installed on older Joomla! versions. Please consider updating to the latest version of Joomla! if you\'d like to still use RSForm! Pro.', 'error');
-			return false;
-		}
-		
 		// Running 3.x
-		if (!$jversion->isCompatible('3.8.0'))
+		if (!$jversion->isCompatible('3.9.0'))
 		{
-			$app->enqueueMessage('Please upgrade to at least Joomla! 3.8.0 before continuing!', 'error');
+			$app->enqueueMessage('Please upgrade to at least Joomla! 3.9.0 before continuing!', 'error');
 			return false;
 		}
 
@@ -1147,17 +1140,18 @@ class com_rsformInstallerScript
 				<p>This is an upgrade - please make sure you update all of your RSForm! Pro Plugins as well, since they have changed to support Joomla! 4 and this version of RSForm! Pro.</p>
 			</div>
 		<?php } ?>
-		<h2>Changelog v3.0.19</h2>
+		<h2>Changelog v3.1.0</h2>
 		<ul class="version-history">
-			<li><span class="version-upgraded">Upg</span> Reworked Foundation layout to use the new XY Grid.</li>
-			<li><span class="version-upgraded">Upg</span> Accessibility improvements: Radio and Checkboxes generate an 'id' attribute for the label in the form of 'fieldname0-lbl'.</li>
-			<li><span class="version-upgraded">Upg</span> Accessibility improvements: Radio and Checkboxes generate an 'id' attribute in the form of 'fieldname-grouplbl' for the 'Caption', which is referenced by each item with an 'aria-labelledby' attribute.</li>
-			<li><span class="version-upgraded">Upg</span> Accessibility improvements: Radio and Checkboxes are now contained inside a '&lt;div role=&quot;group&quot;&gt;&lt;/div&gt;' container.</li>
-			<li><span class="version-upgraded">Upg</span> Accessibility improvements: Birthday Field dropdowns now each generate an 'aria-label' attribute.</li>
-			<li><span class="version-upgraded">Upg</span> Exporting submissions now automatically tries to resume after a few seconds when a server-side error occurs.</li>
-			<li><span class="version-fixed">Fix</span> When editing a submission in the backend, items from Checkbox / Radio or Dropdown fields are no longer disabled even if explicitly set.</li>
-			<li><span class="version-fixed">Fix</span> When 'Captcha' is set to 'Invisible' the 'Caption' is ignored and no longer takes up space in the form.</li>
-			<li><span class="version-fixed">Fix</span> Inputs and labels from Radio and Checkboxes generated using the 'uikit 2' and 'UIkit 3' layouts were showing up too close to each other.</li>
+			<li><span class="version-new">New</span> Triggers: onRsformBackendBeforeGrid, onRsformBackendAfterCreateFieldGroups, onRsformBeforeSilentPost, onRsformBeforeMappings.</li>
+			<li><span class="version-new">New</span> 'Allow HTML' for 'Submit Button', 'Button' and 'Pagebreak' fields - this will allow to write HTML in the 'Label' so you can, for example, place icons inside your buttons.</li>
+			<li><span class="version-upgraded">Upg</span> Changed minimum requirements to use Joomla! 3.9.0 or newer.</li>
+			<li><span class="version-upgraded">Upg</span> PHP 8.1 compatibility improvements.</li>
+			<li><span class="version-upgraded">Upg</span> Form Fields are now grouped accordingly. The 'CAPTCHA Antispam' field has been moved to 'Spam Protection' as we now have several fields for this.</li>
+			<li><span class="version-fixed">Fix</span> Some AJAX requests in the backend are now using POST to prevent incorrect caching on some servers.</li>
+			<li><span class="version-fixed">Fix</span> Some jQuery calls in the backend have been changed to vanilla JS.</li>
+			<li><span class="version-fixed">Fix</span> 'Toggle Quick Add' was generating too many &lt;pre&gt; tags.</li>
+			<li><span class="version-fixed">Fix</span> After deleting certain fields the exact field types could not be re-added until the page was refreshed.</li>
+			<li><span class="version-fixed">Fix</span> A new 'Submissions Directory' menu item will now require to explicitly choose a value for the 'Enable Directory' option before it can actually be saved.</li>
 		</ul>
 		<a class="btn btn-large btn-lg btn-primary" href="index.php?option=com_rsform">Start using RSForm! Pro</a>
 		<a class="btn btn-secondary" href="https://www.rsjoomla.com/support/documentation/rsform-pro.html" target="_blank">Read the RSForm! Pro User Guide</a>

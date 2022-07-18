@@ -895,7 +895,7 @@ class RsformModelDirectory extends JModelLegacy
 		$app		= JFactory::getApplication();
 		$return		= array();
 		$values		= $app->input->get('form',array(),'array');
-		$cid		= $this->_app->input->getInt('id');
+		$cid		= $app->input->getInt('id');
 
 		// Load submission
 		require_once JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/submissions.php';

@@ -14,7 +14,7 @@ JText::script('COM_RSFORM_IMPORT_HAS_FINISHED');
 JText::script('MESSAGE');
 JText::script('ERROR');
 
-$this->document->addScriptDeclaration('jQuery(document).ready(function(){ importProcess(0, ' . $this->limit . ', ' . $this->total . '); });');
+$this->document->addScriptDeclaration(sprintf('window.addEventListener(\'DOMContentLoaded\', function() { importProcess(0, %d, %d); });', $this->limit, $this->total));
 ?>
 <div class="progressWrapper"><div class="progressBar" id="progressBar">0%</div></div>
 

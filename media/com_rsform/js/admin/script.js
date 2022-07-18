@@ -154,6 +154,12 @@ function buildXmlHttp() {
 }
 
 function displayTemplate(componentTypeId, componentId) {
+
+	if (componentId && parseInt(componentId) && !document.querySelector('input[name="cid[]"][value="' + componentId + '"]'))
+	{
+		componentId = null;
+	}
+
 	RSFormPro.editModal.display(componentTypeId, componentId);
 }
 
@@ -323,8 +329,14 @@ function saveLayoutName(layoutName) {
 
 	stateLoading();
 	var xml = buildXmlHttp();
-	xml.open('GET', 'index.php?option=com_rsform&task=layouts.savename&formId=' + formId + '&formLayoutName=' + layoutName, true);
-	xml.send(null);
+	xml.open('POST', 'index.php?option=com_rsform', true);
+	xml.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	var data = [
+		'task=layoutssavename',
+		'formId=' + formId,
+		'formLayoutName=' + layoutName
+	];
+	xml.send(data.join('&'));
 	xml.onreadystatechange = function () {
 		if (xml.readyState === 4) {
 			autoGenerateLayout();

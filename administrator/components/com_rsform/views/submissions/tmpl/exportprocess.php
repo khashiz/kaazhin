@@ -13,7 +13,7 @@ JText::script('ERROR');
 JText::script('COM_RSFORM_AN_ERROR_HAS_OCCURRED');
 JText::script('COM_RSFORM_AN_ERROR_HAS_OCCURRED_ATTEMPTING_TO_CONTINUE_IN_A_FEW_SECONDS');
 
-$this->document->addScriptDeclaration('jQuery(document).ready(function(){ exportProcess(0, ' . $this->limit . ', ' . $this->total . '); });');
+$this->document->addScriptDeclaration(sprintf('window.addEventListener(\'DOMContentLoaded\', function() { exportProcess(0, %d, %d); });', $this->limit, $this->total));
 ?>
 <div class="progressWrapper"><div class="progressBar" id="progressBar">0%</div></div>
 

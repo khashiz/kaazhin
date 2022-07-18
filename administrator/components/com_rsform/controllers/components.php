@@ -169,6 +169,12 @@ class RsformControllerComponents extends RsformController
 					$val = implode(',', $val);
 				}
 
+				// No spaces for new fields
+				if ($key === 'NAME' && $just_added)
+				{
+					$val = str_replace(' ', '_', $val);
+				}
+
 				$property = (object) array(
 				    'PropertyValue' => $val,
                     'PropertyName'  => $key,
@@ -248,11 +254,24 @@ class RsformControllerComponents extends RsformController
 				throw new Exception(JText::_('RSFP_SAVE_FIELD_IF_NAME'), 0);
 			}
 
+			if (is_numeric(substr($name, 0, 1)))
+			{
+				throw new Exception(JText::_('RSFP_SAVE_FIELD_NAME_STARTS_WITH_NUMBER'), 0);
+			}
+
 			$componentType 		= $input->post->getInt('componentType');
 			$currentComponentId = $input->getInt('currentComponentId');
 			$formId				= $input->getInt('formId');
 
-			if (RSFormProHelper::componentNameExists($name, $formId, $currentComponentId)) {
+			if (RSFormProHelper::componentNameExists($name, $formId, $currentComponentId))
+			{
+				throw new Exception(JText::_('RSFP_SAVE_FIELD_ALREADY_EXISTS'), 0);
+			}
+
+			// No spaces for new fields
+			$name = str_replace(' ', '_', $name);
+			if (RSFormProHelper::componentNameExists($name, $formId, $currentComponentId))
+			{
 				throw new Exception(JText::_('RSFP_SAVE_FIELD_ALREADY_EXISTS'), 0);
 			}
 

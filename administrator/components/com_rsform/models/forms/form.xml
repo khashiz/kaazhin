@@ -70,7 +70,7 @@
 			<option value="0">JNO</option>
 			<option value="1">JYES</option>
 		</field>
-		<field name="Thankyou" type="richtext" button="RSFP_EDIT_THANKYOU" label="RSFP_THANKYOU" description="RSFP_ERROR_MESSAGE_DESC" labelclass="rsfp-translate-icon" showon="ShowThankyou:1" />
+		<field name="Thankyou" type="richtext" button="RSFP_EDIT_THANKYOU" label="RSFP_THANKYOU" description="RSFP_THANKYOU_DESC" labelclass="rsfp-translate-icon" showon="ShowThankyou:1" />
 	</fieldset>
 	<fieldset name="form_info_submission">
 		<field name="ReturnUrl" type="text" label="RSFP_RETURN_URL" description="RSFP_RETURN_URL_DESC" labelclass="rsfp-translate-icon" size="70" />

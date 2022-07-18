@@ -131,7 +131,7 @@ class RSFormProCaptcha
 			for ($i = 0; $i < strlen($this->CaptchaString); $i++)
 			{
 				imagettftext($image,$this->Size, mt_rand(-15,15), $i * $this->Size + 10,
-					$imageheight/100*80,
+					round($imageheight/100*80),
 					$stringcolor,
 					$this->getRandomFont(),
 					$this->CaptchaString[$i]);

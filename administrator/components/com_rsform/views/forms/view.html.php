@@ -95,6 +95,8 @@ class RsformViewForms extends JViewLegacy
 				$displayPlaceholders = array_merge($displayPlaceholders, $fields['display']);
 			}
 
+			$this->fieldGroups = $this->get('FieldGroups');
+
 			$this->document->addScriptDeclaration('RSFormPro.Placeholders = ' . json_encode(array_values($displayPlaceholders)) . ';');
 		}
 		elseif ($layout == 'component_copy')

@@ -342,24 +342,30 @@ class RsformModelForms extends JModelList
 			'errorClass' 	=> ''
 		);
 
-		$type = $r['ComponentTypeName'];
-		$classFile = JPATH_ADMINISTRATOR.'/components/com_rsform/helpers/fields/'.strtolower($type).'.php';
-		if (file_exists($classFile)) {
-			$class = 'RSFormProField'.$type;
+		if (!empty($r['ComponentTypeName']))
+		{
+			$type       = $r['ComponentTypeName'];
+			$classFile  = JPATH_ADMINISTRATOR . '/components/com_rsform/helpers/fields/' . strtolower($type) . '.php';
+			if (file_exists($classFile))
+			{
+				$class = 'RSFormProField' . $type;
 
-			if (!class_exists($class)) {
-				require_once $classFile;
+				if (!class_exists($class))
+				{
+					require_once $classFile;
+				}
+
+				// Create the field
+				$field = new $class($config, true);
+
+				// Return the output
+				$out .= $field->output;
 			}
-
-			// Create the field
-			$field = new $class($config, true);
-
-			// Return the output
-			$out .= $field->output;
 		}
 
-		if (empty($out)) {
-			$out = '<td colspan="2" style="color:#333333"><em>'.JText::_('RSFP_COMP_PREVIEW_NOT_AVAILABLE').'</em></td>';
+		if (empty($out))
+		{
+			$out = '<em>'.JText::_('RSFP_COMP_PREVIEW_NOT_AVAILABLE').'</em>';
 		}
 
 		//Trigger Event - onRsformBackendAfterCreateComponentPreview
@@ -922,7 +928,7 @@ class RsformModelForms extends JModelList
 			foreach ($properties as $property) {
 				// Handle duplicated fields
 				if ($property->PropertyName == 'NAME' && $toFormId == $component->FormId) {
-					$property->PropertyValue .= ' copy';
+					$property->PropertyValue .= '_copy';
 
 					while (RSFormProHelper::componentNameExists($property->PropertyValue, $toFormId)) {
 						$property->PropertyValue .= mt_rand(0,9);
@@ -963,5 +969,140 @@ class RsformModelForms extends JModelList
 		}
 
 		return false;
+	}
+
+	public function getFieldGroups()
+	{
+		$groups = array(
+			'standard' => (object) array(
+				'name' 		=> JText::_('RSFP_FORM_FIELDS'),
+				'fields' 	=> array()
+			),
+			'multipage' => (object) array(
+				'name' 		=> JText::_('RSFP_MULTIPAGE'),
+				'fields' 	=> array()
+			),
+			'captcha' => (object) array(
+				'name'		=> JText::_('RSFP_CAPTCHA'),
+				'fields' 	=> array()
+			),
+			'advanced' => (object) array(
+				'name' 		=> JText::_('RSFP_ADVANCED_FORM_FIELDS'),
+				'fields' 	=> array()
+			),
+			'payment' => (object) array(
+				'fields'	=> array()
+			)
+		);
+
+		// Standard fields
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_TEXTBOX,
+			'name' 	=> JText::_('RSFP_COMP_TEXTBOX'),
+			'icon'  => 'rsficon rsficon-progress-full'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_TEXTAREA,
+			'name' 	=> JText::_('RSFP_COMP_TEXTAREA'),
+			'icon'  => 'rsficon rsficon-file-text'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_SELECTLIST,
+			'name' 	=> JText::_('RSFP_COMP_DROPDOWN'),
+			'icon'  => 'rsficon rsficon-caret-square-o-down'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_CHECKBOXGROUP,
+			'name' 	=> JText::_('RSFP_COMP_CHECKBOX'),
+			'icon'  => 'rsficon rsficon-check-square-o'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_RADIOGROUP,
+			'name' 	=> JText::_('RSFP_COMP_RADIO'),
+			'icon'  => 'rsficon rsficon-dot-circle-o'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_SUBMITBUTTON,
+			'name' 	=> JText::_('RSFP_COMP_SUBMITBUTTON'),
+			'icon'  => 'rsficon rsficon-square'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_PASSWORD,
+			'name' 	=> JText::_('RSFP_COMP_PASSWORD'),
+			'icon'  => 'rsficon rsficon-lock'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_FILEUPLOAD,
+			'name' 	=> JText::_('RSFP_COMP_FILE'),
+			'icon'  => 'rsficon rsficon-file-text-o'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_FREETEXT,
+			'name' 	=> JText::_('RSFP_COMP_FREETEXT'),
+			'icon'  => 'rsficon rsficon-sort-alphabetically'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_CALENDAR,
+			'name' 	=> JText::_('RSFP_COMP_CALENDAR'),
+			'icon'  => 'rsficon rsficon-calendar-o'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_JQUERY_CALENDAR,
+			'name' 	=> JText::_('RSFP_COMP_JQUERY_CALENDAR'),
+			'icon'  => 'rsficon rsficon-calendar'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_BUTTON,
+			'name' 	=> JText::_('RSFP_COMP_BUTTON'),
+			'icon'  => 'rsficon rsficon-square'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_HIDDEN,
+			'name' 	=> JText::_('RSFP_COMP_HIDDEN'),
+			'icon'  => 'rsficon rsficon-texture'
+		);
+		$groups['standard']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_TICKET,
+			'name' 	=> JText::_('RSFP_COMP_TICKET'),
+			'icon'  => 'rsficon rsficon-ticket'
+		);
+
+		// Multipage
+		$groups['multipage']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_PAGEBREAK,
+			'name' 	=> JText::_('RSFP_PAGE_BREAK'),
+			'icon'  => 'rsficon rsficon-vertical_align_center'
+		);
+
+		// Captcha
+		$formId = JFactory::getApplication()->input->getInt('formId');
+		$exists = RSFormProHelper::componentExists($formId, RSFORM_FIELD_CAPTCHA);
+		$groups['captcha']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_CAPTCHA,
+			'name' 	=> JText::_('RSFP_COMP_CAPTCHA'),
+			'icon'  => 'rsficon rsficon-shield',
+			'exists' => $exists ? $exists[0] : false
+		);
+
+		// Advanced
+		$groups['advanced']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_BIRTHDAY,
+			'name' 	=> JText::_('RSFP_COMP_BIRTHDAY'),
+			'icon'  => 'rsficon rsficon-birthday-cake'
+		);
+		$groups['advanced']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_GMAPS,
+			'name' 	=> JText::_('RSFP_COMP_GMAP'),
+			'icon'  => 'rsficon rsficon-map-marker'
+		);
+		$groups['advanced']->fields[] = (object) array(
+			'id' 	=> RSFORM_FIELD_RANGE_SLIDER,
+			'name' 	=> JText::_('RSFP_COMP_RANGE_SLIDER'),
+			'icon'  => 'rsficon rsficon-th-list'
+		);
+
+		JFactory::getApplication()->triggerEvent('onRsformBackendAfterCreateFieldGroups', array(&$groups, $this));
+
+		return $groups;
 	}
 }
